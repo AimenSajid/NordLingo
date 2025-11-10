@@ -1,0 +1,4 @@
+logs
+build/Release
+node_modules/
+.env
