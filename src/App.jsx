@@ -1,44 +1,76 @@
 import React, { useState } from "react"
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001"
+
+// DeepL is asymmetric about English: sources take the plain code ("EN"), but a
+// bare "EN" target is rejected as deprecated and needs a region ("EN-US").
+// Passing "EN-US" as a source is rejected too, so the two lists differ on purpose.
+const SOURCE_LANGS = [
+  { code: "DA", label: "Danish" },
+  { code: "EN", label: "English" },
+  { code: "DE", label: "German" },
+  { code: "NB", label: "Norwegian Bokmål" },
+  { code: "SV", label: "Swedish" },
+]
+
+const TARGET_LANGS = [
+  { code: "DA", label: "Danish" },
+  { code: "EN-US", label: "English" },
+  { code: "DE", label: "German" },
+  { code: "NB", label: "Norwegian Bokmål" },
+  { code: "SV", label: "Swedish" },
+]
+
 export default function App() {
   const [inputText, setInputText] = useState("")
   const [outputText, setOutputText] = useState("")
-  const [srcLang, setSrcLang] = useState("NB"); 
-  const [targtLang, setTargtLang] = useState("en-US"); 
+  const [error, setError] = useState("")
+  const [srcLang, setSrcLang] = useState("NB")
+  const [targtLang, setTargtLang] = useState("EN-US")
   const [loading, setLoading] = useState(false)
 
   const handleTranslate = async () => {
+    if (loading) return
+
     if (!inputText.trim()) {
-      setOutputText("Please enter some text to translate.")
+      setError("Please enter some text to translate.")
+      setOutputText("")
       return
     }
 
     setLoading(true)
+    setError("")
     setOutputText("")
 
     try {
-    console.log(srcLang, targtLang)
-    const response = await fetch("http://localhost:3001/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        text: inputText,
-        sourceLang: srcLang,
-        targetLang: targtLang
+      const response = await fetch(`${API_URL}/translate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          text: inputText,
+          sourceLang: srcLang,
+          targetLang: targtLang
+        })
       })
-    })
 
-    const data = await response.json()
-    
-    setOutputText(data.translation || "Translation failed.")
-  } catch (error) {
-    console.error(error)
-    return "Error: Unable to translate text."
-  } finally {
-    setLoading(false)
-  }
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        setError(data.error || `Translation failed (${response.status}).`)
+        return
+      }
+
+      setOutputText(data.translation ?? "")
+    } catch (err) {
+      console.error(err)
+      setError(
+        "Could not reach the translation server. Make sure the backend is running."
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onKeyDown = (e) => {
@@ -56,33 +88,30 @@ export default function App() {
 
       <div className="mb-4 flex gap-4">
         <div className="flex-1">
-          <label className="block mb-1 font-medium">From</label>
+          <label htmlFor="srcLang" className="block mb-1 font-medium">From</label>
           <select
+            id="srcLang"
             value={srcLang}
             onChange={(e) => setSrcLang(e.target.value)}
             className="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-400"
           >
-            <option value="DA">Danish</option>
-            <option value="EN">English</option>
-            <option value="DE">German</option>
-            <option value="NB">Norwegian Bokmål</option>
-            <option value="SV">Swedish</option>
-            
+            {SOURCE_LANGS.map(({ code, label }) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
           </select>
         </div>
 
         <div className="flex-1">
-          <label className="block mb-1 font-medium">To</label>
+          <label htmlFor="targtLang" className="block mb-1 font-medium">To</label>
           <select
+            id="targtLang"
             value={targtLang}
             onChange={(e) => setTargtLang(e.target.value)}
             className="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-400"
           >
-            <option value="DA">Danish</option>
-            <option value="en-US">English</option>
-            <option value="DE">German</option>
-            <option value="NB">Norwegian Bokmål</option>
-            <option value="SV">Swedish</option>
+            {TARGET_LANGS.map(({ code, label }) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -103,6 +132,12 @@ export default function App() {
       >
         {loading ? "Translating..." : "Translate"}
       </button>
+
+      {error && (
+        <p role="alert" className="mt-4 text-sm text-red-600 text-left">
+          {error}
+        </p>
+      )}
 
       <textarea
         rows="5"
