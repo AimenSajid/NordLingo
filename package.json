@@ -1,8 +1,18 @@
 {
-  "name": "norwegian-english-translator",
+  "name": "nordlingo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "A React translator for the Nordic languages, backed by the DeepL API.",
+  "author": "Aimen Sajid",
+  "license": "ISC",
+  "keywords": [
+    "translation",
+    "deepl",
+    "react",
+    "vite",
+    "tailwind"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +24,6 @@
     "deepl-node": "^1.21.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "node-fetch": "^3.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -24,10 +33,5 @@
     "postcss": "^8.4.21",
     "tailwindcss": "^3.3.2",
     "vite": "^4.3.9"
-  },
-  "description": "",
-  "main": "postcss.config.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }
