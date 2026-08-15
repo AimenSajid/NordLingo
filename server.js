@@ -1,10 +1,11 @@
+// Local development server. In production the same logic runs as a Vercel
+// Function (see api/translate.js) — both call into lib/translate.js.
 import express from "express"
 import cors from "cors"
-import deepl from "deepl-node"
 import 'dotenv/config'
+import { translate } from "./lib/translate.js"
 
-const authKey = process.env.DEEPL_API_KEY
-if (!authKey) {
+if (!process.env.DEEPL_API_KEY) {
   console.error(
     "Missing DEEPL_API_KEY. Copy .env.example to .env and add your DeepL API key."
   )
@@ -18,29 +19,10 @@ const app = express()
 app.use(express.json({ limit: "100kb" }))
 app.use(cors({ origin: ALLOWED_ORIGIN }))
 
-const translator = new deepl.Translator(authKey)
-
-app.post("/translate", async (req, res) => {
-  const { text, sourceLang, targetLang } = req.body ?? {}
-
-  if (typeof text !== "string" || !text.trim()) {
-    return res.status(400).json({ error: "A non-empty 'text' field is required." })
-  }
-  if (typeof targetLang !== "string" || !targetLang) {
-    return res.status(400).json({ error: "A 'targetLang' field is required." })
-  }
-
-  try {
-    const result = await translator.translateText(text, sourceLang || null, targetLang)
-    res.json({ translation: result.text })
-  } catch (err) {
-    console.error("Translation error:", err)
-    // DeepL rejects bad language codes with a 4xx; don't report those as our fault.
-    const status = err instanceof deepl.DeepLError && err.message.includes("Bad request")
-      ? 400
-      : 500
-    res.status(status).json({ error: err.message })
-  }
+// Same path as the deployed function, so the frontend calls one URL everywhere.
+app.post("/api/translate", async (req, res) => {
+  const { status, body } = await translate(req.body ?? {})
+  res.status(status).json(body)
 })
 
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`))

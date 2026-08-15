@@ -1,6 +1,8 @@
 import React, { useState } from "react"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001"
+// Same-origin in both dev and production: Vite proxies /api to the local
+// Express server, and Vercel serves it as a function.
+const API_URL = "/api/translate"
 
 // DeepL is asymmetric about English: sources take the plain code ("EN"), but a
 // bare "EN" target is rejected as deprecated and needs a region ("EN-US").
@@ -43,7 +45,7 @@ export default function App() {
     setOutputText("")
 
     try {
-      const response = await fetch(`${API_URL}/translate`, {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

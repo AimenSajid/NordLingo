@@ -54,8 +54,9 @@ cp .env.example .env
 DEEPL_API_KEY=your-key-here
 ```
 
-`VITE_API_URL`, `ALLOWED_ORIGIN`, and `PORT` are also configurable there; all
-three have sensible localhost defaults, so the key is the only one you must set.
+`PORT`, `VITE_API_URL`, and `ALLOWED_ORIGIN` are also configurable there, but
+all three have sensible localhost defaults — the key is the only one you must
+set, locally or in production.
 
 ### Running
 
@@ -75,27 +76,53 @@ Open `http://localhost:5173`.
 
 ```
 index.html           Page shell and React mount point
-server.js            Express backend — POST /translate, proxies to DeepL
+lib/
+  translate.js       The DeepL call — shared by both entry points below
+api/
+  translate.js       Production entry point (Vercel Function at /api/translate)
+server.js            Local dev entry point (Express on port 3001)
 .env.example         Template for the environment variables
 src/
   main.jsx           React entry point
   App.jsx            The whole UI — language pickers, input, output, state
   index.css          Tailwind directives and body styling
-vite.config.js       Vite + React plugin
+vite.config.js       Vite, React plugin, and the /api dev proxy
+vercel.json          Deploy config — framework, build output, SPA rewrites
 tailwind.config.js   Tailwind content paths
 postcss.config.js    Tailwind and autoprefixer
 ```
 
+## Deploying to Vercel
+
+1. Push the branch and import the repository at
+   [vercel.com/new](https://vercel.com/new). `vercel.json` pins the framework
+   to Vite, so nothing needs configuring in the dashboard.
+2. Under **Settings → Environment Variables**, add `DEEPL_API_KEY` with your
+   key. This is the only variable production needs — the rest only affect local
+   development.
+3. Deploy.
+
+The React app is served from the CDN and `api/translate.js` becomes a function
+on the same origin, so there is no CORS configuration and no separate backend
+service to keep awake.
+
 ## How it works
 
 `App.jsx` holds the source language, target language, input text, output text,
-and loading flag in React state. Translating POSTs the text and both language
-codes to the backend, then writes the response into a read-only textarea.
+and loading flag in React state. Translating POSTs to `/api/translate` — a
+relative URL that resolves correctly in both environments — and writes the
+response into a read-only textarea.
 
-`server.js` exposes a single `POST /translate` route. It reads
-`DEEPL_API_KEY` from the environment, hands the text and language codes to
-`deepl-node`, and returns `{ translation }` — or a 500 with `{ error }` if
-DeepL rejects the request.
+The translation itself lives in `lib/translate.js`, which validates the input,
+calls DeepL, and returns a status and body rather than touching a response
+object. Two thin entry points wrap it:
+
+- **`server.js`** — an Express server for local development, on port 3001.
+- **`api/translate.js`** — a Vercel Function, used in production.
+
+Keeping the logic in one module means local and deployed behaviour cannot drift
+apart. In development, Vite proxies `/api` to the Express server, so the
+frontend calls the same relative URL either way.
 
 ### A note on language codes
 
@@ -115,7 +142,7 @@ both directions.
 
 ## API
 
-**`POST /translate`**
+**`POST /api/translate`**
 
 ```json
 {
