@@ -19,6 +19,8 @@ backend talks to DeepL.
   silently.
 - **Secure key handling** — the DeepL key stays server-side in `.env`, which is
   gitignored, and CORS is restricted to a single configurable origin.
+- **Quota protection** — input is capped at 1,000 characters per request,
+  enforced on the server so it holds even if the UI is bypassed.
 
 ## Tech stack
 
@@ -159,8 +161,17 @@ both directions.
 ```
 
 `sourceLang` may be omitted for auto-detection. Errors return `{ "error": "..." }`
-with status 400 for a bad request (missing text, unsupported language code) or
-500 for anything else.
+with status 400 for a bad request (missing text, text over 1,000 characters,
+unsupported language code) or 500 for anything else.
+
+### On quota
+
+DeepL's free tier bills by **characters, not requests**, and stops serving at
+500,000 per month rather than charging for overage. A request-rate limit alone
+would not protect it — one oversized request could consume a fifth of the
+monthly allowance — so `lib/translate.js` caps input length, and the textarea
+mirrors that cap with a live counter. Pair it with a WAF rate limit rule in the
+Vercel dashboard to bound request volume as well.
 
 ## Credits
 

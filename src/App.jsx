@@ -4,6 +4,11 @@ import React, { useState } from "react"
 // Express server, and Vercel serves it as a function.
 const API_URL = "/api/translate"
 
+// Mirrors MAX_CHARS in lib/translate.js, which is the real enforcement point.
+// Duplicated rather than imported: importing from lib/ would pull deepl-node
+// into the browser bundle. The server rejects anything longer regardless.
+const MAX_CHARS = 1000
+
 // DeepL is asymmetric about English: sources take the plain code ("EN"), but a
 // bare "EN" target is rejected as deprecated and needs a region ("EN-US").
 // Passing "EN-US" as a source is rejected too, so the two lists differ on purpose.
@@ -123,9 +128,18 @@ export default function App() {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         onKeyDown={onKeyDown}
+        maxLength={MAX_CHARS}
         placeholder="Enter text here..."
-        className="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
       ></textarea>
+
+      <p
+        className={`mb-4 text-right text-xs ${
+          inputText.length >= MAX_CHARS ? "text-red-600" : "text-gray-500"
+        }`}
+      >
+        {inputText.length} / {MAX_CHARS}
+      </p>
 
       <button
         onClick={handleTranslate}
