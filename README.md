@@ -7,6 +7,8 @@ The API key lives on a small Express backend rather than in the browser, so it
 is never exposed to the client — the React app talks to the backend, and the
 backend talks to DeepL.
 
+Live demo: transcripto.aimensajid953.workers.dev
+
 ## Features
 
 - **Five languages, any direction** — Danish, English, German, Norwegian
