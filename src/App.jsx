@@ -54,6 +54,7 @@ export default function App() {
   const [srcLang, setSrcLang] = useState("NB")
   const [targtLang, setTargtLang] = useState("EN-US")
   const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleTranslate = async () => {
     if (loading) return
@@ -67,6 +68,7 @@ export default function App() {
     setLoading(true)
     setError("")
     setOutputText("")
+    setCopied(false)
 
     try {
       const response = await fetch(API_URL, {
@@ -110,6 +112,17 @@ export default function App() {
     setInputText(newInput)
     setOutputText(newOutput)
     setError("")
+    setCopied(false)
+  }
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(outputText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const onKeyDown = (e) => {
@@ -235,6 +248,17 @@ export default function App() {
                   </p>
                 )}
               </div>
+              {outputText && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className={`flex items-center gap-1.5 rounded-full border border-nordling-border bg-nordling-card px-4 py-2 text-sm font-medium hover:border-nordling-teal focus:outline-none focus:ring-[3px] focus:ring-nordling-pink/40 ${copied ? "text-nordling-teal" : "text-nordling-ink"}`}
+                  >
+                    {copied ? "Copied ✓" : "Copy"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
