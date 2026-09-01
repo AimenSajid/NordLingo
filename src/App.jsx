@@ -13,20 +13,33 @@ const MAX_CHARS = 1000
 // bare "EN" target is rejected as deprecated and needs a region ("EN-US").
 // Passing "EN-US" as a source is rejected too, so the two lists differ on purpose.
 const SOURCE_LANGS = [
-  { code: "DA", label: "Danish" },
-  { code: "EN", label: "English" },
-  { code: "DE", label: "German" },
-  { code: "NB", label: "Norwegian Bokmål" },
-  { code: "SV", label: "Swedish" },
+  { code: "DA", short: "DA", label: "Danish" },
+  { code: "EN", short: "EN", label: "English" },
+  { code: "DE", short: "DE", label: "German" },
+  { code: "NB", short: "NB", label: "Norwegian Bokmål" },
+  { code: "SV", short: "SV", label: "Swedish" },
 ]
 
 const TARGET_LANGS = [
-  { code: "DA", label: "Danish" },
-  { code: "EN-US", label: "English" },
-  { code: "DE", label: "German" },
-  { code: "NB", label: "Norwegian Bokmål" },
-  { code: "SV", label: "Swedish" },
+  { code: "DA", short: "DA", label: "Danish" },
+  { code: "EN-US", short: "EN", label: "English" },
+  { code: "DE", short: "DE", label: "German" },
+  { code: "NB", short: "NB", label: "Norwegian Bokmål" },
+  { code: "SV", short: "SV", label: "Swedish" },
 ]
+
+const diamondClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+
+function Logo() {
+  return (
+    <div
+      className="flex h-8 w-7 flex-none items-center justify-center bg-nordling-pink"
+      style={{ clipPath: diamondClip }}
+    >
+      <div className="h-[15px] w-[13px] bg-nordling-header" style={{ clipPath: diamondClip }} />
+    </div>
+  )
+}
 
 export default function App() {
   const [inputText, setInputText] = useState("")
@@ -87,81 +100,143 @@ export default function App() {
     }
   }
 
+  const nearLimit = inputText.length >= MAX_CHARS * 0.9
+  const countColor = nearLimit ? "text-nordling-pink" : "text-[#8FA09B]"
+
   return (
-    <div className="w-full max-w-lg mx-auto bg-white shadow-md rounded-2xl p-6 text-center">
-      <h1 className="text-2xl font-semibold mb-4">
-        NordLingo
-      </h1>
+    <div className="min-h-screen">
+      <header className="flex items-center gap-3.5 bg-nordling-header px-6 py-4 sm:px-10">
+        <Logo />
+        <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
+          <span className="text-lg font-semibold tracking-tight text-nordling-headertext">
+            NordLingo
+          </span>
+          <span className="text-[13px] text-nordling-headersub">
+            Simple translations for Nordic languages.
+          </span>
+        </div>
+      </header>
 
-      <div className="mb-4 flex gap-4">
-        <div className="flex-1">
-          <label htmlFor="srcLang" className="block mb-1 font-medium">From</label>
-          <select
-            id="srcLang"
-            value={srcLang}
-            onChange={(e) => setSrcLang(e.target.value)}
-            className="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-400"
-          >
-            {SOURCE_LANGS.map(({ code, label }) => (
-              <option key={code} value={code}>{label}</option>
-            ))}
-          </select>
+      <main className="mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-12">
+        <div className="mb-7 max-w-xl">
+          <h1 className="mb-2.5 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            Translate naturally across the Nordic languages.
+          </h1>
+          <p className="text-nordling-muted">
+            Danish, English, German, Norwegian Bokmål and Swedish — short
+            messages, phrases or everyday text.
+          </p>
         </div>
 
-        <div className="flex-1">
-          <label htmlFor="targtLang" className="block mb-1 font-medium">To</label>
-          <select
-            id="targtLang"
-            value={targtLang}
-            onChange={(e) => setTargtLang(e.target.value)}
-            className="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-400"
-          >
-            {TARGET_LANGS.map(({ code, label }) => (
-              <option key={code} value={code}>{label}</option>
-            ))}
-          </select>
+        <div className="rounded-2xl border border-nordling-border bg-nordling-card shadow-[0_14px_34px_-26px_rgba(18,49,40,0.5)]">
+          {/* language pickers */}
+          <div className="grid grid-cols-1 gap-4 border-b border-nordling-border bg-nordling-panel/[.34] p-4 sm:grid-cols-2 sm:p-5">
+            <div>
+              <label
+                htmlFor="srcLang"
+                className="mb-1.5 block font-mono text-[10px] uppercase tracking-[.12em] text-nordling-plum"
+              >
+                From
+              </label>
+              <select
+                id="srcLang"
+                value={srcLang}
+                onChange={(e) => setSrcLang(e.target.value)}
+                className="w-full cursor-pointer rounded-[10px] border border-nordling-border bg-nordling-card px-3.5 py-2.5 font-sans text-base font-medium text-nordling-ink focus:outline-none focus:ring-[3px] focus:ring-nordling-pink/40"
+              >
+                {SOURCE_LANGS.map(({ code, short, label }) => (
+                  <option key={code} value={code}>{short} · {label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="targtLang"
+                className="mb-1.5 block font-mono text-[10px] uppercase tracking-[.12em] text-nordling-plum"
+              >
+                To
+              </label>
+              <select
+                id="targtLang"
+                value={targtLang}
+                onChange={(e) => setTargtLang(e.target.value)}
+                className="w-full cursor-pointer rounded-[10px] border border-nordling-border bg-nordling-card px-3.5 py-2.5 font-sans text-base font-medium text-nordling-ink focus:outline-none focus:ring-[3px] focus:ring-nordling-pink/40"
+              >
+                {TARGET_LANGS.map(({ code, short, label }) => (
+                  <option key={code} value={code}>{short} · {label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* input / output panels */}
+          <div className="grid grid-cols-1 sm:grid-cols-2">
+            <div className="flex flex-col gap-3.5 border-b border-nordling-border p-5 sm:border-b-0 sm:border-r">
+              <textarea
+                aria-label="Text to translate"
+                rows="6"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={onKeyDown}
+                maxLength={MAX_CHARS}
+                placeholder="Enter text to translate..."
+                className="min-h-[160px] resize-none rounded-lg border-0 bg-transparent p-0.5 text-lg leading-relaxed text-nordling-ink focus:outline-none focus:ring-[3px] focus:ring-nordling-pink/30"
+              />
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => { setInputText(""); setError("") }}
+                  className="-ml-2 rounded-lg px-2 py-1.5 text-sm text-[#6B807A] hover:bg-nordling-panel/40 hover:text-nordling-plum"
+                >
+                  Clear
+                </button>
+                <span className={`font-mono text-xs ${countColor}`}>
+                  {inputText.length} / {MAX_CHARS}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3.5 bg-nordling-panel/[.28] p-5">
+              <div className="min-h-[160px] flex-1">
+                {outputText ? (
+                  <p className="text-lg leading-relaxed text-nordling-ink">{outputText}</p>
+                ) : (
+                  <p className="text-lg leading-relaxed text-[#A9B5B1]">
+                    Your translation will appear here.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* action bar */}
+          <div className="flex flex-col items-stretch gap-4 border-t border-nordling-border bg-nordling-panel/[.34] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex min-h-[32px] items-center gap-3.5">
+              {error ? (
+                <div role="alert" className="flex items-center gap-2.5 rounded-[10px] border border-nordling-plum/30 bg-nordling-plum/10 px-3.5 py-2">
+                  <span className="h-[7px] w-[7px] flex-none rounded-full bg-nordling-plum" />
+                  <span className="text-sm text-nordling-muted">{error}</span>
+                </div>
+              ) : (
+                <span className="font-mono text-xs text-[#8FA09B]">
+                  Enter to translate · Shift + Enter for a new line
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleTranslate}
+              disabled={loading}
+              className="flex items-center justify-center gap-2.5 rounded-[11px] bg-nordling-teal px-7 py-3.5 font-semibold text-[#FBF8F8] transition-colors hover:bg-nordling-header disabled:cursor-not-allowed disabled:bg-[#4E6A64] disabled:hover:bg-[#4E6A64]"
+            >
+              {loading && (
+                <span className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-[#FBF8F8]/35 border-t-[#FBF8F8]" />
+              )}
+              {loading ? "Translating…" : "Translate"}
+            </button>
+          </div>
         </div>
-      </div>
-
-      <textarea
-        rows="5"
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        onKeyDown={onKeyDown}
-        maxLength={MAX_CHARS}
-        placeholder="Enter text here..."
-        className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      ></textarea>
-
-      <p
-        className={`mb-4 text-right text-xs ${
-          inputText.length >= MAX_CHARS ? "text-red-600" : "text-gray-500"
-        }`}
-      >
-        {inputText.length} / {MAX_CHARS}
-      </p>
-
-      <button
-        onClick={handleTranslate}
-        disabled={loading}
-        className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-      >
-        {loading ? "Translating..." : "Translate"}
-      </button>
-
-      {error && (
-        <p role="alert" className="mt-4 text-sm text-red-600 text-left">
-          {error}
-        </p>
-      )}
-
-      <textarea
-        rows="5"
-        value={outputText}
-        readOnly
-        placeholder="Translation result will appear here..."
-        className="w-full border border-gray-300 rounded-lg p-3 mt-4 bg-gray-50 text-gray-700"
-      ></textarea>
+      </main>
     </div>
   );
 }
