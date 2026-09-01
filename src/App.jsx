@@ -30,6 +30,12 @@ const TARGET_LANGS = [
 
 const diamondClip = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
 
+// EN is only valid as a source code and EN-US only as a target code (see the
+// SOURCE_LANGS/TARGET_LANGS comment below), so swapping has to translate
+// between the two code spaces rather than just exchanging the raw values.
+const toSourceCode = (code) => (code === "EN-US" ? "EN" : code)
+const toTargetCode = (code) => (code === "EN" ? "EN-US" : code)
+
 function Logo() {
   return (
     <div
@@ -93,6 +99,19 @@ export default function App() {
     }
   }
 
+  const handleSwap = () => {
+    const newSrcLang = toSourceCode(targtLang)
+    const newTargtLang = toTargetCode(srcLang)
+    const newInput = outputText || inputText
+    const newOutput = outputText ? inputText : ""
+
+    setSrcLang(newSrcLang)
+    setTargtLang(newTargtLang)
+    setInputText(newInput)
+    setOutputText(newOutput)
+    setError("")
+  }
+
   const onKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -130,7 +149,7 @@ export default function App() {
 
         <div className="rounded-2xl border border-nordling-border bg-nordling-card shadow-[0_14px_34px_-26px_rgba(18,49,40,0.5)]">
           {/* language pickers */}
-          <div className="grid grid-cols-1 gap-4 border-b border-nordling-border bg-nordling-panel/[.34] p-4 sm:grid-cols-2 sm:p-5">
+          <div className="grid grid-cols-1 items-center gap-4 border-b border-nordling-border bg-nordling-panel/[.34] p-4 sm:grid-cols-[1fr_auto_1fr] sm:p-5">
             <div>
               <label
                 htmlFor="srcLang"
@@ -149,6 +168,15 @@ export default function App() {
                 ))}
               </select>
             </div>
+
+            <button
+              type="button"
+              aria-label="Swap languages"
+              onClick={handleSwap}
+              className="mx-auto flex h-[42px] w-[42px] flex-none rotate-90 items-center justify-center rounded-xl border border-nordling-teal bg-nordling-teal text-base text-nordling-headertext transition-transform duration-200 hover:rotate-[270deg] focus:outline-none focus:ring-[3px] focus:ring-nordling-pink/40 sm:mt-[19px] sm:rotate-0 sm:hover:rotate-180"
+            >
+              ⇄
+            </button>
 
             <div>
               <label
